@@ -103,21 +103,4 @@ exports.leave = function(roomId, uid)
     return true;
 };
 
-exports.nextTurn = function(roomId)
-{
-    var room = allRooms[roomId];
-
-    room.currentTurn ++ ;
-    if ( room.currentTurn > room.numOfPlayers)
-        room.currentTurn = 1;
-
-    room.players[room.currentTurn].time = new Date();
-    if (room.turnTimeout > 0) {
-        clearTimeout(room.timer);
-        room.timer = setTimeout(room.turnTimerFunc, room.turnTimeout + 5);
-    }
-
-    broadcastMessage('next', {}, room.players[room.currentTurn], false);
-};
-
 
