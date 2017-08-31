@@ -106,6 +106,10 @@ function mopai(room)
     return pai;
 }
 
+function chuPai(player, pai)
+{
+}
+
 function checkPeng(player, pai)
 {
     var bm = holds_to_bm(player.gameData.holds);
