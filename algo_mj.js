@@ -1,11 +1,6 @@
 "use strict";
 
-var TableMgr = require( './table_mgr.js' );
 var Hulib = require( './hulib.js' );
-
-TableMgr.Init();
-TableMgr.LoadTable();
-TableMgr.LoadFengTable();
 
 var HOLDS_NUM = 13;   // 手里的牌数
 var PAI_NUM = 34;     // 牌数
@@ -20,7 +15,7 @@ function holds_to_bm(arr)
         t[ arr[ i ] ] += 1;
     }
     var ret = [];
-    for( var i = 1; i < 35; i ++ )
+    for( var i = 0; i < 34; i ++ )
     {
         ret.push( t[ i ] ? t[ i ] : 0 );
     }

@@ -2,6 +2,10 @@
 
 let MTableMgr = require( './table_mgr.js' );
 
+MTableMgr.Init();
+MTableMgr.LoadTable();
+MTableMgr.LoadFengTable();
+
 let ProbabilityItemTable = { };
 
 function _init()
