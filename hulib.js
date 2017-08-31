@@ -2,13 +2,10 @@
 
 let MTableMgr = require( './table_mgr.js' );
 
-const MAX_CARD = 34;
-// let ProbabilityItem = { };
 let ProbabilityItemTable = { };
 
 function _init()
 {
-    //需要初始化多个对象
     ProbabilityItemTable = { array_num : 0, m_num : [ 0, 0, 0, 0 ], m : [] };
     for( let i = 0; i < 4; i ++ )
     {
@@ -20,29 +17,18 @@ function _init()
         }
     }
 }
-//初始化牌型
+
 _init();
 
 let HuLib = module.exports;
 
-// HuLib.gui_index1 = 31;
-// HuLib.gui_index2 = 32;
-
-// HuLib.init = function()
-// {
-//     //初始化数据
-//     this.gui_index1 = 31;
-//     this.gui_index2 = 32;
-//     _init();
-// };
-
-HuLib.get_hu_info = function( cards, cur_card,gui_1,gui_2)
+HuLib.checkHu = function( cards, cur_card, gui_1, gui_2 )
 {
     _init();
 
     //返回当前数组的副本
     let tmp_cards = cards.concat();
-    if ( cur_card != MAX_CARD )
+    if ( cur_card >= 0 )
     {
         tmp_cards[ cur_card ] += 1;
     }
@@ -52,13 +38,13 @@ HuLib.get_hu_info = function( cards, cur_card,gui_1,gui_2)
     let gui_index2 = gui_2;
 
     let gui_num = 0;
-    if( gui_index1 != MAX_CARD )
+    if( gui_index1 >= 0 )
     {
         gui_num += tmp_cards[ gui_index1 ];
         tmp_cards[ gui_index1 ] = 0;
 
     }
-    if( gui_index2 != MAX_CARD )
+    if( gui_index2 >= 0 )
     {
         gui_num += parseInt( tmp_cards[ gui_index2 ] );
         tmp_cards[ gui_index2 ] = 0;
@@ -69,7 +55,6 @@ HuLib.get_hu_info = function( cards, cur_card,gui_1,gui_2)
 
         return false;
     }
-
 
     return this.check_probability( ProbabilityItemTable, gui_num );
 };

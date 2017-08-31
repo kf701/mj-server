@@ -153,12 +153,23 @@ function checkChi(player, pai)
 
 function checkHu(palyer, pai)
 {
-    return false;
+    var bm = holds_to_bm(player.gameData.holds);
+    return Hulib.checkHu(bm, pai, -1, -1);
 }
 
 function getTings(player)
 {
-    return [];
+    var tings = [];
+    var bm = holds_to_bm(player.gameData.holds);
+
+    for (var i = 0 ; i < PAI_NUM ; i ++) {
+        bm[i] += 1;
+        if (Hulib.checkHu(bm, pai, -1, -1))
+            tings.push(i); 
+        bm[i] -= 1;
+    }
+
+    return tings;
 }
 
 
