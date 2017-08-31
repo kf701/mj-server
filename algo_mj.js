@@ -115,6 +115,9 @@ function checkGang(player, pai)
 
 function checkChi(player, pai)
 {
+    if (pai > 26) { //feng can not chi
+        return false;
+    }
     var holds = player.gameData.holds;
     var hasBeforeBeforePai = false;
     if (pai % 9 > 1) {
