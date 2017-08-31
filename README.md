@@ -1,5 +1,5 @@
 # mj-server
-mj server
+
 <br/>
 代码说明：<br/>
 table_mgr.js, table.js, hulib.js, tbl/  这是麻将判胡的算法库，见 https://github.com/yuanfengyun/qipai
