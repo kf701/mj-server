@@ -126,7 +126,8 @@ function checkChi(player, pai)
 function checkHoldsChi(holds, pai)
 {
     var bm = holds_to_bm(holds);
-    console.log(bm.join());
+    //console.log(bm.join());
+    //console.log(holds_to_bm([pai]).join());
     if (pai > 26) { //feng can not chi
         return false;
     }
@@ -147,10 +148,6 @@ function checkHoldsChi(holds, pai)
         hasAfterAfterPai = bm[pai + 2] > 0;
     }
 
-    console.log(hasBeforeBeforePai);
-    console.log(hasBeforePai);
-    console.log(hasAfterPai);
-    console.log(hasAfterAfterPai);
     return hasBeforeBeforePai && hasBeforePai
         || hasBeforePai && hasAfterPai
         || hasAfterPai && hasAfterAfterPai;
