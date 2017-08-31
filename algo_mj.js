@@ -3,8 +3,8 @@
 var TableMgr = require( './table_mgr.js' );
 var Hulib = require( './hulib.js' );
 
-TableMgr.init();
-TableMgrLoadTable();
+TableMgr.Init();
+TableMgr.LoadTable();
 TableMgr.LoadFengTable();
 
 var HOLDS_NUM = 13;   // 手里的牌数
@@ -27,13 +27,13 @@ function holds_to_bm(arr)
     return ret;
 }
 
-function craete()
+function create()
 {
     var arr = [];
 
     for (var i = 0 ; i < PAI_NUM ; i ++) {
         for (var j = 0 ; j < 4 ; j ++) {
-            arr[] = i;
+            arr.push(i);
         }
     }
 
@@ -151,7 +151,7 @@ function checkChi(player, pai)
         || hasAfterPai && hasAfterAfterPai;
 }
 
-function checkHu(palyer, pai)
+function checkHu(player, pai)
 {
     var bm = holds_to_bm(player.gameData.holds);
     return Hulib.checkHu(bm, pai, -1, -1);
