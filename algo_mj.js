@@ -62,14 +62,24 @@ function dice(room)
 function prepare_palyer(player)
 {
     player.gameData = {};
-    player.gameData.holds = [];
+    player.gameData.holds = [];   // 手里的牌
+    player.gameData.rids  = [];   // 打出的牌
+    player.gameData.pengs = [];
+    player.gameData.gangs = [];
+    player.gameData.chis  = [];
+    player.gameData.tings = [];
+    player.gameData.canPeng = false;
+    player.gameData.canGang = false;
+    player.gameData.canChi  = false;
+    player.gameData.canHu   = false;
 }
 
 function prepare(room)
 {
     room.gameData = {};
     room.gameData.mahjongs = create();
-    room.gameData.mj_index = 0;
+    room.gameData.mj_index = 0;   // 摸牌位置
+    room.gameData.pai = -1;       // 当前打出的牌
     room.gameData.dices = [];
 
     shuffle(room.gameData.mahjongs);
@@ -141,8 +151,22 @@ function checkChi(player, pai)
         || hasAfterPai && hasAfterAfterPai;
 }
 
+function checkHu(palyer, pai)
+{
+    return false;
+}
+
+function getTings(player)
+{
+    return [];
+}
+
 
 exports.dice = dice;
 exports.shuffle = shuffle;
 exports.prepare = prepare;
+exports.mopai = mopai;
+exports.checkHu = checkHu;
+exports.getTings = getTings;
+
 
