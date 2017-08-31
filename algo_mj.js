@@ -101,16 +101,41 @@ function mopai(room)
     return pai;
 }
 
-function checkPeng(player, pai) 
+function checkPeng(player, pai)
 {
     var bm = holds_to_bm(player.gameData.holds);
     return (bm[pai] >= 2);
 }
 
-function checkGang(player, pai) 
+function checkGang(player, pai)
 {
     var bm = holds_to_bm(player.gameData.holds);
     return (bm[pai] >= 3);
+}
+
+function checkChi(player, pai)
+{
+    var holds = player.gameData.holds;
+    var hasBeforeBeforePai = false;
+    if (pai % 9 > 1) {
+        hasBeforeBeforePai = holds[pai - 2] > 0;
+    }
+    var hasBeforePai = false;
+    if (pai % 9 > 0) {
+        hasBeforePai = holds[pai - 1] > 0;
+    }
+    var hasAfterPai = false;
+    if ( pai % 9 < 8) {
+        hasAfterPai = holds[pai + 1] > 0;
+    }
+    var hasAfterAfterPai = false;
+    if (pai % 9 < 7) {
+        hasAfterAfterPai = holds[pai + 2] > 0;
+    }
+
+    return hasBeforeBeforePai && hasBeforePai
+        || hasBeforePai && hasAfterPai
+        || hasAfterPai && hasAfterAfterPai;
 }
 
 
