@@ -106,28 +106,45 @@ function mopai(room)
     return pai;
 }
 
-function chuPai(player, pai)
+function chuPai(room, player, pai)
 {
+    var paiIndex = -1;
+    for (var i = 0; i < player.gameData.holds.length; i++) {
+        if (player.gameData.holds[i] == pai) {
+            paiIndex = i;
+            break;
+        }
+    }
+
+    if (paiIndex != -1) {
+        player.gameData.holds.splice(paiIndex, 1);
+    }
+
+    for(var roomPlayer in room.players) {
+        var bm = holds_to_bm(roomPlayer.gameData.holds);
+        roomPlayer.gameData.canPeng = checkPeng(bm, pai);
+        roomPlayer.gameData.canGang = checkGang(bm, pai);
+        if (roomPlayer.seat - player.seat == 1) {
+            roomPlayer.gameData.canChi = checkChi(bm, pai);
+        }
+    }
 }
 
-function checkPeng(player, pai)
+function checkPeng(bm, pai)
 {
-    var bm = holds_to_bm(player.gameData.holds);
     return (bm[pai] >= 2);
 }
 
-function checkGang(player, pai)
+function checkGang(bm, pai)
 {
-    var bm = holds_to_bm(player.gameData.holds);
     return (bm[pai] >= 3);
 }
 
-function checkChi(player, pai)
+function checkChi(holds, pai)
 {
     if (pai > 26) { //feng can not chi
         return false;
     }
-    var holds = player.gameData.holds;
     var hasBeforeBeforePai = false;
     if (pai % 9 > 1) {
         hasBeforeBeforePai = holds[pai - 2] > 0;

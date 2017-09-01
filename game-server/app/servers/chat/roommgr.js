@@ -42,6 +42,10 @@ exports.broadcast = function(roomId, msg)
     console.log('RoomMgr broadcast', msg);
 };
 
+exports.pushMsg = function(uids, msg)
+{
+};
+
 exports.generateRoomId = function () {
 	var roomId = '';
 	for (var i = 0; i < 6; ++i) {
@@ -126,7 +130,7 @@ exports.dealMsg = function(roomId, uid, msg)
     var player = UserMgr.findUser(uid);
 
     if (msg.e == 'ready') {
-        players.ready = true;
+        player.ready = true;
 
         var msg = {
             e: 'ready',
@@ -136,13 +140,16 @@ exports.dealMsg = function(roomId, uid, msg)
 
         if ( isReady(room) ) {
             GameAlgo.prepare(room);
+            for (var roomPalyer in room.palyers) {
+                exports.pushMsg(roomPlayer.uid, roomPlayer.gameData);
+            }
         }
 
         return true;
     }
 
     if (msg.e == 'chupai') {
-        GameAlgo.chuPai(player, msg.pai);
+        GameAlgo.chuPai(room, player, msg.pai);
         return true;
     }
 
