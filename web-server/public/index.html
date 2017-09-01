@@ -17,6 +17,7 @@
 .pull-right {float:right !important;}
 .pull-left {float:left !important;}
 
+#gameView {width:830px; margin:0 auto;}
 .seat-holds {width:100%; border:1px solid #ddd;}
 #seat-west
 </style>
@@ -51,22 +52,36 @@
 
 
     <div id="gameView" style="display:none;">
-        <div id="seat-north" style="width:600px; margin:0 auto;">
+        <div id="seat-north" style="width:600px; margin:10px auto;">
             <div class="seat-holds">手牌</div>
             <div class="seat-state pull-left"></div>
+            <br/><br/><br/>
             <div class="clearfix"></div>
         </div>
 
-        <div style="width:r800px;">
-            <div id="seat-west pull-left" style="width:200px;">
+        <div style="width:830px;">
+            <div id="seat-west" class="pull-left" style="width:200px; min-height:300px;">
                 <div class="seat-state"></div>
                 <div class="seat-holds">手牌</div>
             </div>
 
-            <div id="zhuozi" style="width:400px;">
+            <div id="seat-east" class="pull-right" style="width:200px; min-height:300px;">
+                <div class="seat-state"></div>
+                <div class="seat-holds">手牌</div>
             </div>
+
+            <div id="zhuozi" style="margin:0 210px; width:400px; height:200px; background:#eee;">
+                这个位置是桌子
+            </div>
+
+            <div class="clearfix"></div>
         </div>
 
+        <div id="seat-south" style="width:600px; margin:10px auto;">
+            <div class="seat-holds">手牌</div>
+            <div class="seat-state pull-left"></div>
+            <div class="clearfix"></div>
+        </div>
     </div>
 
 </div>
