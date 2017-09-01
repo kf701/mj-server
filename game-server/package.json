@@ -3,7 +3,8 @@
 	"version": "0.0.1",
 	"private": false,
 	"dependencies": {
-		"pomelo": "1.2.0",
-		"crc": "0.2.0"
+		"crc": "0.2.0",
+		"object-assign": "^4.1.1",
+		"pomelo": "1.2.0"
 	}
 }

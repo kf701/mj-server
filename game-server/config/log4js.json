@@ -1,7 +1,8 @@
 {
   "appenders": [
     {
-      "type": "console"
+      "type": "console",
+      "filename": "${opts:base}/logs/mj-log-${opts:serverId}.log"
     },
     {
       "type": "file",

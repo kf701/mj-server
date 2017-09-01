@@ -16,13 +16,15 @@ var UserObject = {
     gameData: null  // 牌局实时数据
 };
 
-var allUsers = [];
+var allUsers = {};
+var userCount = 0;
 
 exports.newUser = function (uid) {
     var u =  Object.assign({}, UserObject);
     u.uid = uid;
     allUsers[uid] = u;
-    console.log('Now all users = ' + allUsers.length);
+    userCount ++
+    console.log('Now users = ' + userCount);
     return true;
 };
 
@@ -43,6 +45,7 @@ exports.offline = function(uid) {
 
 exports.del = function(uid) {
     //TODO  delete user from AllUsers array
-    console.log('Now all users = ' + allUsers.length);
+    userCount --
+    console.log('Now users = ' + userCount);
 };
 

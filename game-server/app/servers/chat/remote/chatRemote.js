@@ -9,6 +9,7 @@ module.exports = function(app) {
 var ChatRemote = function(app) {
 	this.app = app;
 	this.channelService = app.get('channelService');
+    RoomMgr.channelService = this.channelService;
 };
 
 /**

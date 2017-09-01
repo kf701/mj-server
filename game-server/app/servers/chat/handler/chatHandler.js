@@ -1,4 +1,4 @@
-var chatRemote = require('../remote/chatRemote');
+
 var RoomMgr = require('../roommgr');
 
 module.exports = function(app) {

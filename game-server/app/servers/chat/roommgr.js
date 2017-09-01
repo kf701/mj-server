@@ -24,14 +24,22 @@ var RoomObject = {
     }
 };
 
-var allRooms = [];
+var allRooms = {};
+var roomCount = 0;
 
 exports.channelService = null;
 
 exports.broadcast = function(roomId, msg)
 {
+    if ( ! exports.channelService )
+    {
+        console.log('room channelService not set, broadcast failed');
+        return ;
+    }
+
 	var channel = exports.channelService.getChannel(roomId, false);
-    channle.pushMessage('onChat', msg);
+    channel.pushMessage('onChat', msg);
+    console.log('RoomMgr broadcast', msg);
 };
 
 exports.generateRoomId = function () {
@@ -50,6 +58,8 @@ exports.createRoom = function(creatorUid, roomId, gameServer)
     room.craeteUid = creatorUid;
     room.players = [];
     allRooms[roomId] = room;
+    roomCount ++;
+    console.log('Now room count = ' + roomCount);
 };
 
 exports.findRoom = function(roomId) 
@@ -59,9 +69,10 @@ exports.findRoom = function(roomId)
 
 exports.enter = function(roomId, uid)
 {
+    var room = allRooms[roomId];
+
     if (room.players.length >= room.numOfPlayers) return false;
 
-    var room = allRooms[roomId];
     var u = UserMgr.findUser(uid);
     u.roomId = roomId;
     room.players.push(u); 
