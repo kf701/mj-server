@@ -5,6 +5,7 @@ var assign = require('object-assign');
 var UserObject = {
     uid : 0,
     roomId: 0,
+    seat: -1,       // 在房间里的座位
     ready : false,
     online : true,
     ip : '0.0.0.0',
@@ -21,7 +22,8 @@ exports.newUser = function (uid) {
     var u =  Object.assign({}, UserObject);
     u.uid = uid;
     allUsers[uid] = u;
-    return u;
+    console.log('Now all users = ' + allUsers.length);
+    return true;
 };
 
 exports.syncFromDb = function(uid) {
@@ -38,3 +40,9 @@ exports.offline = function(uid) {
     var u = findUser(uid);
     u.online = false;
 };
+
+exports.del = function(uid) {
+    //TODO  delete user from AllUsers array
+    console.log('Now all users = ' + allUsers.length);
+};
+

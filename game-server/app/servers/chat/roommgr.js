@@ -26,7 +26,15 @@ var RoomObject = {
 
 var allRooms = [];
 
-function generateRoomId() {
+exports.channelService = null;
+
+exports.broadcast = function(roomId, msg)
+{
+	var channel = exports.channelService.getChannel(roomId, false);
+    channle.pushMessage('onChat', msg);
+};
+
+exports.generateRoomId = function () {
 	var roomId = '';
 	for (var i = 0; i < 6; ++i) {
 		roomId += Math.floor(Math.random()*10);
@@ -34,42 +42,19 @@ function generateRoomId() {
 	return roomId;
 }
 
-exports.pushMessage = function(touid, ev, data, sender)
-{
-};
-
-exports.broadcastMessage = function(ev, data, sender, exclude)
-{
-};
-
-exports.createRoom = function(creatorUid, gameServer, callback)
+exports.createRoom = function(creatorUid, roomId, gameServer)
 {
     var room =  Object.assign({}, RoomObject);
-    var roomId = generateRoomId();
     room.roomId = roomId;
     room.runServer = gameServer;
     room.craeteUid = creatorUid;
     room.players = [];
     allRooms[roomId] = room;
-    callback(0, roomId);
 };
 
 exports.findRoom = function(roomId) 
 {
     return allRooms[roomId];
-};
-
-exports.isFull = function(roomId)
-{
-    var room = allRooms[roomId];
-    if (room.players.length >= room.numOfPlayers) return true;
-    return false;
-};
-
-exports.prepare = function(roomId)
-{
-    var room = allRooms[roomId];
-    GameAlgo.prepare(room);
 };
 
 exports.enter = function(roomId, uid)
@@ -80,7 +65,13 @@ exports.enter = function(roomId, uid)
     var u = UserMgr.findUser(uid);
     u.roomId = roomId;
     room.players.push(u); 
-    broadcastMessage('enter', {}, uid, false);
+    u.seat = room.players.length - 1;
+
+    var msg = {
+        e: 'enter',
+        u: uid
+    };
+    exports.broadcast(roomId, msg);
     return true;
 };
 
@@ -99,8 +90,51 @@ exports.leave = function(roomId, uid)
     var u = room.players[userIndex];
     u.roomId = 0;
     room.players.splice(userIndex, 1);
-    broadcastMessage('leave', {}, uid, false);
+
+    var msg = {
+        e: 'leave',
+        u: uid
+    };
+    exports.broadcast(roomId, msg);
     return true;
 };
 
+function isReady(room)
+{
+    for (var i = 0 ; i < room.players.length ; i ++) {
+        if ( ! room.players[i].ready ) {
+            return false;
+        }
+    }
+    return true;
+}
+
+exports.dealMsg = function(roomId, uid, msg)
+{
+    var room = allRooms[roomId];
+    var player = UserMgr.findUser(uid);
+
+    if (msg.e == 'ready') {
+        players.ready = true;
+
+        var msg = {
+            e: 'ready',
+            u: uid
+        };
+        exports.broadcast(roomId, msg);
+
+        if ( isReady(room) ) {
+            GameAlgo.prepare(room);
+        }
+
+        return true;
+    }
+
+    if (msg.e == 'chupai') {
+        GameAlgo.chuPai(player, msg.pai);
+        return true;
+    }
+
+    //TODO
+};
 

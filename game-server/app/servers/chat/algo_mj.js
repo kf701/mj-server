@@ -124,32 +124,25 @@ function checkGang(player, pai)
 
 function checkChi(player, pai)
 {
-    return checkHoldsChi(holds_to_bm(player.holds), pai);
-}
-
-function checkHoldsChi(holds, pai)
-{
-    var bm = holds_to_bm(holds);
-    //console.log(bm.join());
-    //console.log(holds_to_bm([pai]).join());
     if (pai > 26) { //feng can not chi
         return false;
     }
+    var holds = player.gameData.holds;
     var hasBeforeBeforePai = false;
     if (pai % 9 > 1) {
-        hasBeforeBeforePai = bm[pai - 2] > 0;
+        hasBeforeBeforePai = holds[pai - 2] > 0;
     }
     var hasBeforePai = false;
     if (pai % 9 > 0) {
-        hasBeforePai = bm[pai - 1] > 0;
+        hasBeforePai = holds[pai - 1] > 0;
     }
     var hasAfterPai = false;
     if ( pai % 9 < 8) {
-        hasAfterPai = bm[pai + 1] > 0;
+        hasAfterPai = holds[pai + 1] > 0;
     }
     var hasAfterAfterPai = false;
     if (pai % 9 < 7) {
-        hasAfterAfterPai = bm[pai + 2] > 0;
+        hasAfterAfterPai = holds[pai + 2] > 0;
     }
 
     return hasBeforeBeforePai && hasBeforePai
@@ -184,8 +177,6 @@ exports.shuffle = shuffle;
 exports.prepare = prepare;
 exports.mopai = mopai;
 exports.checkHu = checkHu;
-exports.checkChi = checkChi;
-exports.checkHoldsChi = checkHoldsChi;
 exports.getTings = getTings;
 
 
