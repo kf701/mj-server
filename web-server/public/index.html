@@ -1,16 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>麻将</title>
-    <link rel="stylesheet" href="style.css" type="text/css" />
-    <script src="js/lib/jquery-1.8.0.min.js" type="text/javascript"></script>
-    <script src="js/lib/build/build.js" type="text/javascript"></script>
-    <script type="text/javascript">
-     require('boot');
-    </script> 
-    <script src="js/client.js"></script>
-    <script src="js/pop.js" type="text/javascript"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>麻将</title>
+<link rel="stylesheet" href="style.css" type="text/css" />
+<script src="js/lib/jquery-1.8.0.min.js" type="text/javascript"></script>
+<script src="js/lib/build/build.js" type="text/javascript"></script>
+<script type="text/javascript">
+  require('boot');
+</script> 
+<script src="js/client.js"></script>
+<script src="js/pop.js" type="text/javascript"></script>
+<style>
+.clearfix:before, .clearfix:after { display: table; content: " "; }
+.clearfix:after, .dialog-header:after { clear: both; }
+.pull-right {float:right !important;}
+.pull-left {float:left !important;}
+
+.seat-holds {width:100%; border:1px solid #ddd;}
+#seat-west
+</style>
 </head>
 <body>
 
@@ -42,7 +51,22 @@
 
 
     <div id="gameView" style="display:none;">
-        GAME VIEW
+        <div id="seat-north" style="width:600px; margin:0 auto;">
+            <div class="seat-holds">手牌</div>
+            <div class="seat-state pull-left"></div>
+            <div class="clearfix"></div>
+        </div>
+
+        <div style="width:r800px;">
+            <div id="seat-west pull-left" style="width:200px;">
+                <div class="seat-state"></div>
+                <div class="seat-holds">手牌</div>
+            </div>
+
+            <div id="zhuozi" style="width:400px;">
+            </div>
+        </div>
+
     </div>
 
 </div>

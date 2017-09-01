@@ -1,5 +1,5 @@
 
-var algo = require( './algo_mj.js' );
+var algo = require( '../algo_mj.js' );
 
 var player = {
     gameData: {
