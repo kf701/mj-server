@@ -44,7 +44,7 @@ exports.offline = function(uid) {
 };
 
 exports.del = function(uid) {
-    //TODO  delete user from AllUsers array
+    delete allUsers[uid];
     userCount --
     console.log('Now users = ' + userCount);
 };
