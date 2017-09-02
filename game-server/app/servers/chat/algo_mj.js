@@ -114,6 +114,8 @@ function chuPai(room, player, pai)
         player.gameData.rids.push(pai);
     }
 
+    room.gameData.pai = pai;
+
     for(var roomPlayer in room.players) {
         if (roomPlayer.uid == player.uid) {
             continue;
@@ -121,10 +123,11 @@ function chuPai(room, player, pai)
         var bm = holds_to_bm(roomPlayer.gameData.holds);
         roomPlayer.gameData.canPeng = checkPeng(bm, pai);
         roomPlayer.gameData.canGang = checkGang(bm, pai);
-        if (roomPlayer.seat - player.seat == 1) {
-            roomPlayer.gameData.canChi = checkChi(bm, pai);
-        }
+        roomPlayer.gameData.canHu   = checkHu(bm, pai);
+        roomPlayer.gameData.canChi  = checkChi(bm, pai);
     }
+
+    return true;
 }
 
 exports.pengPai = function(room, player, pai) {
@@ -195,9 +198,8 @@ function checkChi(holds, pai)
         || hasAfterPai && hasAfterAfterPai;
 }
 
-function checkHu(player, pai)
+function checkHu(bm, pai)
 {
-    var bm = holds_to_bm(player.gameData.holds);
     return Hulib.checkHu(bm, pai, -1, -1);
 }
 

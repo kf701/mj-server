@@ -124,6 +124,19 @@ function isReady(room)
     return true;
 }
 
+function syncPlayerGameData(room)
+{
+    var msg = {
+        e: 'gamedata',
+    };
+
+    for (var roomPalyer in room.palyers) {
+        msg.u = roomPlayer.uid;
+        msg.d = roomPlayer.gameData;
+        exports.pushMsg([roomPlayer.uid], msg);
+    }
+}
+
 exports.dealMsg = function(roomId, uid, msg)
 {
     var room = allRooms[roomId];
@@ -140,9 +153,7 @@ exports.dealMsg = function(roomId, uid, msg)
 
         if ( isReady(room) ) {
             GameAlgo.prepare(room);
-            for (var roomPalyer in room.palyers) {
-                exports.pushMsg(roomPlayer.uid, roomPlayer.gameData);
-            }
+            syncPlayerGameData(root);
         }
 
         return true;
@@ -150,13 +161,22 @@ exports.dealMsg = function(roomId, uid, msg)
 
     if (msg.e == 'chupai') {
         GameAlgo.chuPai(room, player, msg.pai);
-        for (var roomPalyer in room.palyers) {
-            exports.pushMsg(roomPlayer.uid, roomPlayer.gameData);
-        }
+
+        var msg = {
+            e: 'chupai',
+            u: uid
+        };
+        exports.broadcast(roomId, msg);
+
+        syncPlayerGameData(root);
         return true;
     }
 
     if (msg.e == 'pengpai') {
+        // this code is incorrect !!!
+        // player from args, look up !!! 不一定是currentTurn !!!
+        // pai is in room.gameData.pai
+        // 碰过后，currentTurn 变成 我， 而不是正常的 ++, 碰的消息是要广播的, 同上面的 出牌一样， 我加了广播
         var paiPlayer = room.players[room.currentTurn];
         var ret = GameAlgo.pengPai(room, pengPlayer, paiPlayer.gameData.rids.pop());
         if (ret) {
