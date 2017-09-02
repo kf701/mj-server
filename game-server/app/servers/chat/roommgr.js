@@ -150,7 +150,18 @@ exports.dealMsg = function(roomId, uid, msg)
 
     if (msg.e == 'chupai') {
         GameAlgo.chuPai(room, player, msg.pai);
+        for (var roomPalyer in room.palyers) {
+            exports.pushMsg(roomPlayer.uid, roomPlayer.gameData);
+        }
         return true;
+    }
+
+    if (msg.e == 'pengpai') {
+        var paiPlayer = room.players[room.currentTurn];
+        GameAlgo.pengPai(room, pengPlayer, paiPlayer);
+        exports.pushMsg(paiPlayer.uid, paiPlayer.gameData);
+        exports.pushMsg(player.uid, player.gameData);
+
     }
 
     //TODO

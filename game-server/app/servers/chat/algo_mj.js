@@ -108,16 +108,10 @@ function mopai(room)
 
 function chuPai(room, player, pai)
 {
-    var paiIndex = -1;
-    for (var i = 0; i < player.gameData.holds.length; i++) {
-        if (player.gameData.holds[i] == pai) {
-            paiIndex = i;
-            break;
-        }
-    }
-
+    var paiIndex = player.gameData.holds.indexOf(pai);
     if (paiIndex != -1) {
         player.gameData.holds.splice(paiIndex, 1);
+        player.gameData.rids.push(pai);
     }
 
     for(var roomPlayer in room.players) {
@@ -128,6 +122,22 @@ function chuPai(room, player, pai)
             roomPlayer.gameData.canChi = checkChi(bm, pai);
         }
     }
+}
+
+exports.pengPai = function(room, pengPlayer, paiPlayer) {
+    var pai = paiPlayer.gameData.rids.pop();
+    var pengPaiIndex = pengPlayer.gameData.holds.indexOf(pai);
+    if (pengPaiIndex == -1) {
+        return false;
+    }
+    pengPlayer.splice(pengPaiIndex, 1);
+    pengPaiIndex = pengPlayer.gameData.holds.indexOf(pai);
+    if (pengPaiIndex == -1) {
+        return false;
+    }
+    pengPlayer.splice(pengPaiIndex, 1);
+    pengPlayer.gameData.pengs.push(pai, pai, pai);
+    return true;
 }
 
 function checkPeng(bm, pai)
