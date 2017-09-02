@@ -158,12 +158,33 @@ exports.dealMsg = function(roomId, uid, msg)
 
     if (msg.e == 'pengpai') {
         var paiPlayer = room.players[room.currentTurn];
-        GameAlgo.pengPai(room, pengPlayer, paiPlayer);
-        exports.pushMsg(paiPlayer.uid, paiPlayer.gameData);
-        exports.pushMsg(player.uid, player.gameData);
-
+        var ret = GameAlgo.pengPai(room, pengPlayer, paiPlayer.gameData.rids.pop());
+        if (ret) {
+            exports.pushMsg(paiPlayer.uid, paiPlayer.gameData);
+            exports.pushMsg(player.uid, player.gameData);
+            return true;
+        }
+        return false;
     }
 
+    if (msg.e == 'gangpai') {
+        var paiPlayer = room.players[room.currentTurn];
+        var pai = null;
+        if (paiPlayer.uid == player.uid) {
+            pai = paiPlayer.gameData.holds.splice(msg.pai, 1);
+        } else {
+            pai = paiPlayer.gameData.rids.pop();
+        }
+        var ret = GameAlgo.pengPai(room, pengPlayer, pai);
+        if (ret) {
+            if (paiPlayer.uid != player.uid) {
+                exports.pushMsg(paiPlayer.uid, paiPlayer.gameData);
+            }
+            exports.pushMsg(player.uid, player.gameData);
+            return true;
+        }
+        return false;
+    }
     //TODO
 };
 

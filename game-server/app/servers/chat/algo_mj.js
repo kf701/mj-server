@@ -115,6 +115,9 @@ function chuPai(room, player, pai)
     }
 
     for(var roomPlayer in room.players) {
+        if (roomPlayer.uid == player.uid) {
+            continue;
+        }
         var bm = holds_to_bm(roomPlayer.gameData.holds);
         roomPlayer.gameData.canPeng = checkPeng(bm, pai);
         roomPlayer.gameData.canGang = checkGang(bm, pai);
@@ -124,19 +127,34 @@ function chuPai(room, player, pai)
     }
 }
 
-exports.pengPai = function(room, pengPlayer, paiPlayer) {
-    var pai = paiPlayer.gameData.rids.pop();
-    var pengPaiIndex = pengPlayer.gameData.holds.indexOf(pai);
-    if (pengPaiIndex == -1) {
+exports.pengPai = function(room, player, pai) {
+    if (false == removeItems(player.gameData.holds, pai, 2)) {
         return false;
     }
-    pengPlayer.splice(pengPaiIndex, 1);
-    pengPaiIndex = pengPlayer.gameData.holds.indexOf(pai);
-    if (pengPaiIndex == -1) {
+    player.gameData.pengs.push(pai, pai, pai);
+    return true;
+};
+
+exports.gangPai = function(room, player, pai) {
+    if (false == removeItems(player.gameData.holds, pai, 3)) {
         return false;
     }
-    pengPlayer.splice(pengPaiIndex, 1);
-    pengPlayer.gameData.pengs.push(pai, pai, pai);
+    player.gameData.gangs.push(pai, pai, pai, pai);
+    return true;
+};
+
+function removeItems(arr, item, removeCount) {
+    var findCount = arr.filter(function(arrItem) {
+            arrItem == item;
+        }).length;
+
+    if (removeCount != findCount) {
+        return false;
+    }
+    for (var i = 0; i < removeCount; i++) {
+        var index = arr.indexOf(item);
+        arr.splice(item, 1);
+    }
     return true;
 }
 
