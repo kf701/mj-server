@@ -1,6 +1,7 @@
 
 var UserMgr = require('../usermgr');
 var RoomMgr = require('../roommgr');
+var RoomMsg = require('../roommsg');
 
 module.exports = function(app) {
 	return new ChatRemote(app);
@@ -9,7 +10,7 @@ module.exports = function(app) {
 var ChatRemote = function(app) {
 	this.app = app;
 	this.channelService = app.get('channelService');
-    RoomMgr.channelService = this.channelService;
+    RoomMsg.channelService = this.channelService;
 };
 
 /**

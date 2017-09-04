@@ -4,6 +4,7 @@ var assign = require('object-assign');
 
 var UserMgr = require('./usermgr');
 var GameAlgo = require('./algo_mj');
+var RoomMsg = require('../roommsg');
 
 var RoomObject = {
     roomId: '0',
@@ -26,25 +27,6 @@ var RoomObject = {
 
 var allRooms = {};
 var roomCount = 0;
-
-exports.channelService = null;
-
-exports.broadcast = function(roomId, msg)
-{
-    if ( ! exports.channelService )
-    {
-        console.log('room channelService not set, broadcast failed');
-        return ;
-    }
-
-	var channel = exports.channelService.getChannel(roomId, false);
-    channel.pushMessage('onChat', msg);
-    console.log('RoomMgr broadcast', msg);
-};
-
-exports.pushMsg = function(uids, msg)
-{
-};
 
 exports.generateRoomId = function () {
 	var roomId = '';
@@ -86,7 +68,7 @@ exports.enter = function(roomId, uid)
         e: 'enter',
         u: uid
     };
-    exports.broadcast(roomId, msg);
+    RoomMsg.broadcast(roomId, msg);
     return true;
 };
 
@@ -110,7 +92,7 @@ exports.leave = function(roomId, uid)
         e: 'leave',
         u: uid
     };
-    exports.broadcast(roomId, msg);
+    RoomMsg.broadcast(roomId, msg);
     return true;
 };
 
@@ -122,19 +104,6 @@ function isReady(room)
         }
     }
     return true;
-}
-
-function syncPlayerGameData(room)
-{
-    var msg = {
-        e: 'gamedata',
-    };
-
-    for (var roomPalyer in room.palyers) {
-        msg.u = roomPlayer.uid;
-        msg.d = roomPlayer.gameData;
-        exports.pushMsg([roomPlayer.uid], msg);
-    }
 }
 
 exports.dealMsg = function(roomId, uid, msg)
@@ -149,62 +118,31 @@ exports.dealMsg = function(roomId, uid, msg)
             e: 'ready',
             u: uid
         };
-        exports.broadcast(roomId, msg);
+        RoomMsg.broadcast(roomId, msg);
 
         if ( isReady(room) ) {
             GameAlgo.prepare(room);
-            syncPlayerGameData(root);
         }
 
         return true;
     }
 
     if (msg.e == 'chupai') {
-        GameAlgo.chuPai(room, player, msg.pai);
-
-        var msg = {
-            e: 'chupai',
-            u: uid
-        };
-        exports.broadcast(roomId, msg);
-
-        syncPlayerGameData(root);
-        return true;
+        return GameAlgo.chuPai(room, player, msg.pai);
     }
 
     if (msg.e == 'pengpai') {
-        // this code is incorrect !!!
-        // player from args, look up !!! 不一定是currentTurn !!!
-        // pai is in room.gameData.pai
-        // 碰过后，currentTurn 变成 我， 而不是正常的 ++, 碰的消息是要广播的, 同上面的 出牌一样， 我加了广播
-        var paiPlayer = room.players[room.currentTurn];
-        var ret = GameAlgo.pengPai(room, pengPlayer, paiPlayer.gameData.rids.pop());
-        if (ret) {
-            exports.pushMsg(paiPlayer.uid, paiPlayer.gameData);
-            exports.pushMsg(player.uid, player.gameData);
-            return true;
-        }
-        return false;
+        return GameAlgo.pengPai(room, player);
     }
 
     if (msg.e == 'gangpai') {
-        var paiPlayer = room.players[room.currentTurn];
-        var pai = null;
-        if (paiPlayer.uid == player.uid) {
-            pai = paiPlayer.gameData.holds.splice(msg.pai, 1);
-        } else {
-            pai = paiPlayer.gameData.rids.pop();
-        }
-        var ret = GameAlgo.pengPai(room, pengPlayer, pai);
-        if (ret) {
-            if (paiPlayer.uid != player.uid) {
-                exports.pushMsg(paiPlayer.uid, paiPlayer.gameData);
-            }
-            exports.pushMsg(player.uid, player.gameData);
-            return true;
-        }
-        return false;
+        return GameAlgo.pengPai(room, player);
     }
+
+    if (msg.e == 'chipai') {
+        return GameAlgo.chiPai(room, player, msg.pai1, msg.pai2);
+    }
+
     //TODO
 };
 

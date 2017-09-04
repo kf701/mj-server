@@ -1,6 +1,7 @@
 "use strict";
 
 var Hulib = require( './hulib.js' );
+var RoomMsg = require('../roommsg');
 
 var HOLDS_NUM = 13;   // 手里的牌数
 var PAI_NUM = 34;     // 牌数
@@ -20,6 +21,42 @@ function holds_to_bm(arr)
         ret.push( t[ i ] ? t[ i ] : 0 );
     }
     return ret;
+}
+
+function syncPlayerGameData(player)
+{
+    var msg = {
+        e: 'holddata',
+        u: player.uid,
+        d: player.gameData
+    };
+
+    RoomMsg.push([player.uid], msg);
+}
+
+function removeItems(arr, item, removeCount)
+{
+    var findCount = arr.filter(function(arrItem) {
+            arrItem == item;
+        }).length;
+
+    if (removeCount > findCount) {
+        return false;
+    }
+    for (var i = 0; i < removeCount; i++) {
+        var index = arr.indexOf(item);
+        arr.splice(item, 1);
+    }
+    return true;
+}
+
+function broadcast_turn(roomId, turn)
+{
+    var msg = {
+        e: 'turn',
+        d: turn
+    };
+    RoomMsg.broadcast(roomId, msg);
 }
 
 function create()
@@ -87,7 +124,12 @@ function prepare(room)
 	for (var i = 0; i < init_mopai_count; i++) {
 		mopai(room);
     }
+
+    for (var i = 0 ; i < room.players.length ; i ++) {
+        syncPlayerGameData(room.players[i]);
+    }
 }
+
 
 function mopai(room)
 {
@@ -98,10 +140,6 @@ function mopai(room)
     var pai = room.gameData.mahjongs[room.gameData.mj_index];
     room.players[room.currentTurn].gameData.holds.push(pai);
     room.gameData.mj_index++;
-    room.currentTurn++;
-    if ( room.currentTurn >= room.players.length ) {
-        room.currentTurn = 0;
-    }
 
     return pai;
 }
@@ -116,50 +154,111 @@ function chuPai(room, player, pai)
 
     room.gameData.pai = pai;
 
+    var msg = {
+        e: 'chupai',
+        u: uid,
+        pai: pai
+    };
+    RoomMsg.broadcast(roomId, msg);
+
+    msg = {
+        e: 'holddata',
+    };
+
     for(var roomPlayer in room.players) {
         if (roomPlayer.uid == player.uid) {
             continue;
         }
-        var bm = holds_to_bm(roomPlayer.gameData.holds);
-        roomPlayer.gameData.canPeng = checkPeng(bm, pai);
-        roomPlayer.gameData.canGang = checkGang(bm, pai);
-        roomPlayer.gameData.canHu   = checkHu(bm, pai);
-        roomPlayer.gameData.canChi  = checkChi(bm, pai);
+        var gd = roomPlayer.gameData;
+        var bm = holds_to_bm(gd.holds);
+
+        gameData.canPeng = checkPeng(bm, pai);
+        gameData.canGang = checkGang(bm, pai);
+        gameData.canHu   = checkHu(bm, pai);
+        gameData.canChi  = checkChi(bm, pai);
+        
+        syncPlayerGameData(roomPlayer);
+    }
+
+    var nohup = false;
+
+    if (nohup) {
+        room.currentTurn++;
+        if ( room.currentTurn >= room.players.length ) {
+            room.currentTurn = 0;
+        }
+ 
+        broadcast_turn(roomId, room.currentTurn);
     }
 
     return true;
 }
 
-exports.pengPai = function(room, player, pai) {
-    if (false == removeItems(player.gameData.holds, pai, 2)) {
+exports.chiPai = function(room, player, pai1, pai2)
+{
+    var pai = room.gameData.pai;
+
+    if (!player.canChi) {
         return false;
     }
+
+    if (!removeItems(player.gameData.holds, pai, 1)) {
+        return false;
+    }
+
+    var chi = {pai: pai, arr: [pai, pai1, pai2]};
+    chi.arr.sort();
+    player.gameData.chis.push(chi);
+
+    room.currentTurn = player.seat;
+    broadcast_turn(roomId, room.currentTurn);
+
+    syncPlayerGameData(player);
+
+    return true;
+};
+
+exports.pengPai = function(room, player)
+{
+    var pai = room.gameData.pai;
+
+    if (!player.canPeng) {
+        return false;
+    }
+    if (!removeItems(player.gameData.holds, pai, 2)) {
+        return false;
+    }
+
     player.gameData.pengs.push(pai, pai, pai);
+
+    room.currentTurn = player.seat;
+    broadcast_turn(roomId, room.currentTurn);
+
+    syncPlayerGameData(player);
+
     return true;
 };
 
-exports.gangPai = function(room, player, pai) {
-    if (false == removeItems(player.gameData.holds, pai, 3)) {
+exports.gangPai = function(room, player)
+{
+    var pai = room.gameData.pai;
+
+    if (!player.canGang) {
         return false;
     }
+    if (!removeItems(player.gameData.holds, pai, 3)) {
+        return false;
+    }
+
     player.gameData.gangs.push(pai, pai, pai, pai);
+
+    room.currentTurn = player.seat;
+    broadcast_turn(roomId, room.currentTurn);
+
+    syncPlayerGameData(player);
+
     return true;
 };
-
-function removeItems(arr, item, removeCount) {
-    var findCount = arr.filter(function(arrItem) {
-            arrItem == item;
-        }).length;
-
-    if (removeCount != findCount) {
-        return false;
-    }
-    for (var i = 0; i < removeCount; i++) {
-        var index = arr.indexOf(item);
-        arr.splice(item, 1);
-    }
-    return true;
-}
 
 function checkPeng(bm, pai)
 {
@@ -222,8 +321,11 @@ function getTings(player)
 exports.dice = dice;
 exports.shuffle = shuffle;
 exports.prepare = prepare;
-exports.mopai = mopai;
-exports.checkHu = checkHu;
 exports.getTings = getTings;
+exports.mopai = mopai;
+exports.chupai = chupai;
+exports.pengpai = pengpai;
+exports.gangpai = gangpai;
+exports.chipai = chipai;
 
 
