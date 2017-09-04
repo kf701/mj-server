@@ -116,7 +116,8 @@ exports.dealMsg = function(roomId, uid, msg)
 
         var msg = {
             e: 'ready',
-            u: uid
+            u: uid,
+            seat: player.seat
         };
         RoomMsg.broadcast(roomId, msg);
 
