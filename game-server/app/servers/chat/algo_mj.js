@@ -31,7 +31,7 @@ function _syncPlayerData(player)
         d: player.gameData
     };
 
-    RoomMsg.push([player.uid], msg);
+    RoomMsg.push(player.roomId, [player.uid], msg);
 }
 
 function _removeItems(arr, item, removeCount)
@@ -218,7 +218,7 @@ function chuPai(room, player, pai)
                 u: player.uid,
                 pai: mo
             };
-            RoomMsg.push([player.uid], msg);
+            RoomMsg.push(roomId, [player.uid], msg);
         }
     }
 

@@ -12,10 +12,27 @@ exports.broadcast = function(roomId, msg)
 
 	var channel = exports.channelService.getChannel(roomId, false);
     channel.pushMessage('onChat', msg);
-    console.log('broadcast', msg);
+    console.log('broadcast msg', msg);
 };
 
-exports.push = function(uids, msg)
+exports.push = function(roomId, uids, msg)
 {
-    console.log('push', msg);
+    if ( ! exports.channelService )
+    {
+        console.log('room channelService not set, broadcast failed');
+        return ;
+    }
+
+    var uu = [];
+	var channel = exports.channelService.getChannel(roomId, false);
+
+    for (var i = 0 ; i < uids.length ; i ++ )
+    {
+        var tsid = channel.getMember(uids[i])['sid'];
+        uu.push({uid: uids[i], sid: tsid});
+    }
+
+    exports.channelService.pushMessageByUids('onChat', msg, uu);
+    console.log('push msg', msg);
+    console.log('push to', uu);
 };

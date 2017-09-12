@@ -10,14 +10,36 @@ var LENGTH_ERROR = "Name/Channel is too long or too short. 20 character max.";
 var NAME_ERROR = "Bad character in Name/Channel. Can only have letters, numbers, Chinese characters, and '_'";
 var DUPLICATE_ERROR = "Please change your name to login.";
 
+var pai_names = [
+    '一万', '二万', '三万', '四万', '五万', '六万', '七万', '八万', '九万', 
+    '一筒', '二筒', '三筒', '四筒', '五筒', '六筒', '七筒', '八筒', '九筒', 
+    '一条', '二条', '三条', '四条', '五条', '六条', '七条', '八条', '九条', 
+    '东风', '南风', '西风', '北风', '红中', '白板', '发财'
+];
+
+function holds_display(holds)
+{
+    var ss = '';
+    holds.sort();
+    for (var i = 0 ; i < holds.length ; i ++) 
+    {
+        ss = ss + ',' + pai_names[holds[i]];
+    }
+    return ss;
+}
+
 // show tip
 function tip(msg) {
 	//var title = 'Message Notify';
 	//var tip = 'msg: ' + msg.e + ', uid: ' + msg.u;
 	//var pop=new Pop(title, tip);
 
-	var tip = 'room: ' + g_rid + ', ' + JSON.stringify(msg);
-    $('#gameView').append(tip + '<br/>');
+	var tip = 'room: ' + g_rid + ', 收到：' + JSON.stringify(msg);
+    $('#gameView').append('<div class="msgbox">' + tip + '</div>');
+
+    if (msg.e == 'holddata') {
+        $('#gameView').append( '<div class="msgbox">手牌：' + holds_display(msg.d.holds) + '</div>' );
+    }
 };
 
 // show error
@@ -37,6 +59,7 @@ function showLogin() {
 function showGame() {
 	$("#loginView").hide();
 	$("#loginError").hide();
+	$("#gameView").empty();
 	$("#gameView").show();
     sendMsg({e:'ready'});
 };
@@ -62,10 +85,10 @@ function queryEntry(uid, callback) {
 	});
 };
 
-
-function sendMsg(msg, callback) {
+function sendMsg(msg) {
+    var xx = '发送: ' + JSON.stringify(msg);
+    $('#gameView').append('<div class="msgbox">' +xx + '</div>');
 	pomelo.request("chat.chatHandler.send", msg, function(data) {
-        callback(data);
 	});
 }
 

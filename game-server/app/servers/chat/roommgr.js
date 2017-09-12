@@ -14,7 +14,7 @@ var RoomObject = {
     creatorUid: 0,
     numOfGames: 0,    // 玩了几局了
     timer: null,
-    numOfPlayers: 4,  // 共几个玩家
+    numOfPlayers: 2,  // 共几个玩家
     players: null,
     state: 'wait',    // wait, ready, play, over
     runServer: '',
