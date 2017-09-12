@@ -98,6 +98,8 @@ exports.leave = function(roomId, uid)
 
 function isReady(room)
 {
+    if (room.numOfPlayers > room.players.length) return false;
+
     for (var i = 0 ; i < room.players.length ; i ++) {
         if ( ! room.players[i].ready ) {
             return false;

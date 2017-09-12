@@ -12,9 +12,11 @@ var DUPLICATE_ERROR = "Please change your name to login.";
 
 // show tip
 function tip(msg) {
-	var title = 'Message Notify';
-	var tip = 'msg: ' + msg.e + ', uid: ' + msg.u;
-	var pop=new Pop(title, tip);
+	//var title = 'Message Notify';
+	//var tip = 'msg: ' + msg.e + ', uid: ' + msg.u;
+	//var pop=new Pop(title, tip);
+
+	var tip = 'room: ' + g_rid + ', ' + JSON.stringify(msg);
     $('#gameView').append(tip + '<br/>');
 };
 
