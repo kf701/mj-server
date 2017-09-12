@@ -1,7 +1,7 @@
 "use strict";
 
 var Hulib = require( './hulib.js' );
-var RoomMsg = require('../roommsg');
+var RoomMsg = require('./roommsg');
 
 var HOLDS_NUM = 13;   // 手里的牌数
 var PAI_NUM = 34;     // 牌数
@@ -225,7 +225,7 @@ function chuPai(room, player, pai)
     return true;
 }
 
-exports.chiPai = function(room, player, pai1, pai2)
+function chiPai(room, player, pai1, pai2)
 {
     var pai = room.gameData.pai;
 
@@ -249,7 +249,7 @@ exports.chiPai = function(room, player, pai1, pai2)
     return true;
 };
 
-exports.pengPai = function(room, player)
+function pengPai(room, player)
 {
     var pai = room.gameData.pai;
 
@@ -270,7 +270,7 @@ exports.pengPai = function(room, player)
     return true;
 };
 
-exports.gangPai = function(room, player)
+function gangPai(room, player)
 {
     var pai = room.gameData.pai;
 
@@ -353,9 +353,9 @@ exports.dice = dice;
 exports.shuffle = shuffle;
 exports.prepare = prepare;
 exports.getTings = getTings;
-exports.chupai = chupai;
-exports.pengpai = pengpai;
-exports.gangpai = gangpai;
-exports.chipai = chipai;
+exports.chuPai = chuPai;
+exports.pengPai = pengPai;
+exports.gangPai = gangPai;
+exports.chiPai = chiPai;
 
 

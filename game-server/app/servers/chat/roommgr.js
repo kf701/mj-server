@@ -4,7 +4,7 @@ var assign = require('object-assign');
 
 var UserMgr = require('./usermgr');
 var GameAlgo = require('./algo_mj');
-var RoomMsg = require('../roommsg');
+var RoomMsg = require('./roommsg');
 
 var RoomObject = {
     roomId: '0',
@@ -108,6 +108,8 @@ function isReady(room)
 
 exports.dealMsg = function(roomId, uid, msg)
 {
+    console.log('dealMsg', msg);
+
     var room = allRooms[roomId];
     var player = UserMgr.findUser(uid);
 

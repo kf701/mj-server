@@ -15,6 +15,7 @@ function tip(msg) {
 	var title = 'Message Notify';
 	var tip = 'msg: ' + msg.e + ', uid: ' + msg.u;
 	var pop=new Pop(title, tip);
+    $('#gameView').append(tip + '<br/>');
 };
 
 // show error
@@ -26,10 +27,8 @@ function showError(content) {
 // show login panel
 function showLogin() {
 	$("#loginView").show();
-	$("#chatHistory").hide();
-	$("#toolbar").hide();
 	$("#loginError").hide();
-	$("#loginUser").focus();
+	$("#gameView").hide();
 };
 
 // show chat panel
@@ -37,6 +36,7 @@ function showGame() {
 	$("#loginView").hide();
 	$("#loginError").hide();
 	$("#gameView").show();
+    sendMsg({e:'ready'});
 };
 
 // query connector

@@ -12,6 +12,8 @@ var Handler = function(app) {
     RoomMsg.channelService = this.channelService;
 };
 
+var handler = Handler.prototype;
+
 handler.send = function(msg, session, next) {
 	var rid = session.get('rid');
 	var uid = session.uid;
