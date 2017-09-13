@@ -357,7 +357,7 @@ function pengPai(room, player)
     player.gameData.pengs.push(pai, pai, pai);
 
     room.currentTurn = player.seat;
-    _broadcastTurn(roomId, room.currentTurn);
+    _broadcastTurn(room.roomId, room.currentTurn);
 
     _syncPlayerData(player);
 
@@ -378,7 +378,7 @@ function gangPai(room, player)
     player.gameData.gangs.push(pai, pai, pai, pai);
 
     room.currentTurn = player.seat;
-    _broadcastTurn(roomId, room.currentTurn);
+    _broadcastTurn(room.roomId, room.currentTurn);
 
     _syncPlayerData(player);
 
