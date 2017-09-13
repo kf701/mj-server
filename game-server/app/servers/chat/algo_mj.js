@@ -171,20 +171,85 @@ function prepare(room)
     RoomMsg.push(room.roomId, [room.players[room.currentTurn].uid], msg);
 }
 
-function pass(room, player)
+function _passAll(room)
 {
+    for(var i = 0 ; i < room.players.length ; i ++)
+    {
+        var roomPlayer = room.players[i];
+        var gd = roomPlayer.gameData;
+
+        gd.canPeng = false;
+        gd.canGang = false;
+        gd.canChi  = false;
+        gd.canHu   = false;
+
+        _syncPlayerData(roomPlayer);
+    }
+
     _moveNext(room);
     _broadcastTurn(room.roomId, room.currentTurn);
-
+ 
     var mo = _moPai(room, room.players[room.currentTurn]);
     if (mo > -1 ) {
-        msg = {
+        var msg = {
             e: 'mopai',
             u: room.players[room.currentTurn].uid,
             pai: mo
         };
         RoomMsg.push(room.roomId, [room.players[room.currentTurn].uid], msg);
     }
+}
+
+function pass(room, player)
+{
+    player.gameData.canPeng = false;
+    player.gameData.canGang = false;
+    player.gameData.canChi  = false;
+    player.gameData.canHu   = false;
+
+    var nohup = true;
+
+    for(var i = 0 ; i < room.players.length ; i ++)
+    {
+        var roomPlayer = room.players[i];
+        var gd = roomPlayer.gameData;
+        var bm = _holdsToBm(gd.holds);
+
+        gd.canPeng = false;
+        gd.canGang = false;
+        gd.canChi  = false;
+        gd.canHu   = false;
+
+        if (roomPlayer.uid != player.uid)
+        {
+            gd.canPeng = checkPeng(bm, pai);
+            gd.canGang = checkGang(bm, pai);
+            gd.canChi  = checkChi(bm, pai);
+            gd.canHu   = checkHu(bm, pai);
+        }
+        
+        if (gd.canPeng || gd.canGang || gd.canChi || gd.canHu) {
+            nohup = false;
+        }
+
+        _syncPlayerData(roomPlayer);
+    }
+
+    if (nohup) {
+        _moveNext(room);
+        _broadcastTurn(room.roomId, room.currentTurn);
+ 
+        var mo = _moPai(room, room.players[room.currentTurn]);
+        if (mo > -1 ) {
+            var msg = {
+                e: 'mopai',
+                u: room.players[room.currentTurn].uid,
+                pai: mo
+            };
+            RoomMsg.push(room.roomId, [room.players[room.currentTurn].uid], msg);
+        }
+    }
+
     return true;
 }
 
@@ -246,6 +311,9 @@ function chuPai(room, player, pai)
             };
             RoomMsg.push(room.roomId, [room.players[room.currentTurn].uid], msg);
         }
+    }
+    else {
+        setTimeout(function(){_passAll(room);}, room.passTimeout);
     }
 
     return true;

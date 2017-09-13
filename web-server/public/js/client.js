@@ -78,6 +78,8 @@ function tip(msg) {
     else if (msg.e == 'mopai') {
         chupai();
     }
+
+    $('#gameView').scrollTop($('#gameView')[0].scrollHeight);
 };
 
 // show error
@@ -99,6 +101,7 @@ function showGame() {
 	$("#loginError").hide();
 	$("#gameView").empty();
 	$("#gameView").show();
+    $('#gameView').css('height', $(window).height() + 'px');
     sendMsg({e:'ready'});
 };
 
