@@ -49,12 +49,58 @@ function update_users(msg)
     if (msg.u == g_uid) g_seat = msg.seat;
 }
 
+function _holdsToBm(arr)
+{
+    var t = {};
+    for( var i = 0; i < arr.length; i ++ )
+    {
+        if( !t[ arr[ i ] ] ) t[ arr[ i ] ] = 0;
+        t[ arr[ i ] ] += 1;
+    }
+    var ret = [];
+    for( var i = 0; i < 34; i ++ )
+    {
+        ret.push( t[ i ] ? t[ i ] : 0 );
+    }
+    return ret;
+}
+
+function find_chupai_ai(holds)
+{
+	var bm = _holdsToBm(holds);
+    var i = 33;
+    while( i >= 0 ) 
+    {
+        if ( bm[i] != 1 ) {
+            i--;
+            continue;
+        }
+        
+        if ( i >= 27 ) return  i;
+
+        if (i == 0 || i == 9 || i == 18) {
+            if (bm[i+1] != 1) return i;
+        }
+        else if (i == 8 || i == 17 || i == 26) {
+            if (bm[i-1] != 1) return i;
+        }
+        else {
+            if (bm[i-1] != 1 && bm[i+1] != 1) return i;
+        }
+
+        i--;
+    }
+
+    return holds[0];
+}
+
 function chupai()
 {
-    var pai = g_data.holds[0];
+    var pai = find_chupai_ai(g_data.holds);
     setTimeout(function(){
+        $('#gameView').append( '<div class="msgbox">我出：' + pai_names[pai] + '</div>' );
         sendMsg({e:'chupai', pai:pai});
-    }, 3000);
+    }, 8000);
 }
 
 function tip(msg) {
@@ -74,8 +120,13 @@ function tip(msg) {
         if (g_data.canHu) {
             $('#gameView').append('<div class="msgbox">我胡了！！！</div>');
         }
+        if (g_data.canPeng) {
+            $('#gameView').append( '<div class="msgbox">我碰</div>' );
+            sendMsg({e:'pengpai'});
+        }
     }
     else if (msg.e == 'mopai') {
+        $('#gameView').append( '<div class="msgbox">我摸到：' + pai_names[msg.pai] + '</div>' );
         chupai();
     }
 

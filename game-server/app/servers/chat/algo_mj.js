@@ -34,19 +34,21 @@ function _syncPlayerData(player)
     RoomMsg.push(player.roomId, [player.uid], msg);
 }
 
-function _removeItems(arr, item, removeCount)
+function _removeItems(player, pai, removeCount)
 {
-    var findCount = arr.filter(function(arrItem) {
-            arrItem == item;
-        }).length;
+    var count = 0;
 
-    if (removeCount > findCount) {
-        return false;
+    while (count < removeCount)
+    {
+        for (var i = 0; i < player.gameData.holds.length; i++) {
+            if (player.gameData.holds[i] == pai) {
+                player.gameData.holds.splice(item, 1);
+                count++;
+                break;
+            }
+        }
     }
-    for (var i = 0; i < removeCount; i++) {
-        var index = arr.indexOf(item);
-        arr.splice(item, 1);
-    }
+
     return true;
 }
 
@@ -326,10 +328,7 @@ function chiPai(room, player, pai1, pai2)
     if (!player.canChi) {
         return false;
     }
-
-    if (!_removeItems(player.gameData.holds, pai, 1)) {
-        return false;
-    }
+    _removeItems(player, pai, 1);
 
     var chi = {pai: pai, arr: [pai, pai1, pai2]};
     chi.arr.sort();
@@ -350,9 +349,7 @@ function pengPai(room, player)
     if (!player.canPeng) {
         return false;
     }
-    if (!_removeItems(player.gameData.holds, pai, 2)) {
-        return false;
-    }
+    _removeItems(player, pai, 2);
 
     player.gameData.pengs.push(pai, pai, pai);
 
@@ -371,9 +368,7 @@ function gangPai(room, player)
     if (!player.canGang) {
         return false;
     }
-    if (!_removeItems(player.gameData.holds, pai, 3)) {
-        return false;
-    }
+    _removeItems(player, pai, 3);
 
     player.gameData.gangs.push(pai, pai, pai, pai);
 
