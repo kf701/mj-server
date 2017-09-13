@@ -156,12 +156,37 @@ function prepare(room)
 		_moPai(room, room.players[room.currentTurn]);
         _moveNext(room);
     }
+    var mo = _moPai(room, room.players[room.currentTurn]);
 
     for (var i = 0 ; i < room.players.length ; i ++) {
         _syncPlayerData(room.players[i]);
     }
+
+    _broadcastTurn(room.roomId, room.currentTurn);
+    var msg = {
+        e: 'mopai',
+        u: room.players[room.currentTurn].uid,
+        pai: mo
+    };
+    RoomMsg.push(room.roomId, [room.players[room.currentTurn].uid], msg);
 }
 
+function pass(room, player)
+{
+    _moveNext(room);
+    _broadcastTurn(room.roomId, room.currentTurn);
+
+    var mo = _moPai(room, room.players[room.currentTurn]);
+    if (mo > -1 ) {
+        msg = {
+            e: 'mopai',
+            u: room.players[room.currentTurn].uid,
+            pai: mo
+        };
+        RoomMsg.push(room.roomId, [room.players[room.currentTurn].uid], msg);
+    }
+    return true;
+}
 
 function chuPai(room, player, pai)
 {
@@ -175,15 +200,16 @@ function chuPai(room, player, pai)
 
     var msg = {
         e: 'chupai',
-        u: uid,
+        u: player.uid,
         pai: pai
     };
-    RoomMsg.broadcast(roomId, msg);
+    RoomMsg.broadcast(room.roomId, msg);
 
     var nohup = true;
 
-    for(var roomPlayer in room.players)
+    for(var i = 0 ; i < room.players.length ; i ++)
     {
+        var roomPlayer = room.players[i];
         var gd = roomPlayer.gameData;
         var bm = _holdsToBm(gd.holds);
 
@@ -209,16 +235,16 @@ function chuPai(room, player, pai)
 
     if (nohup) {
         _moveNext(room);
-        _broadcastTurn(roomId, room.currentTurn);
+        _broadcastTurn(room.roomId, room.currentTurn);
 
         var mo = _moPai(room, room.players[room.currentTurn]);
         if (mo > -1 ) {
             msg = {
                 e: 'mopai',
-                u: player.uid,
+                u: room.players[room.currentTurn].uid,
                 pai: mo
             };
-            RoomMsg.push(roomId, [player.uid], msg);
+            RoomMsg.push(room.roomId, [room.players[room.currentTurn].uid], msg);
         }
     }
 
@@ -242,7 +268,7 @@ function chiPai(room, player, pai1, pai2)
     player.gameData.chis.push(chi);
 
     room.currentTurn = player.seat;
-    _broadcastTurn(roomId, room.currentTurn);
+    _broadcastTurn(room.roomId, room.currentTurn);
 
     _syncPlayerData(player);
 
@@ -357,5 +383,5 @@ exports.chuPai = chuPai;
 exports.pengPai = pengPai;
 exports.gangPai = gangPai;
 exports.chiPai = chiPai;
-
+exports.pass = pass;
 

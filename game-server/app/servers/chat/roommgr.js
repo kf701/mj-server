@@ -148,6 +148,10 @@ exports.dealMsg = function(roomId, uid, msg)
         return GameAlgo.chiPai(room, player, msg.pai1, msg.pai2);
     }
 
+    if (msg.e == 'pass') {
+        return GameAlgo.pass(room, player);
+    }
+
     //TODO
 };
 

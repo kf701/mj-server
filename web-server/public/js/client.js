@@ -1,8 +1,12 @@
 
 var pomelo = window.pomelo;
 
-var g_uid;
 var g_rid;
+var g_uid;
+var g_seat;
+var g_users = [];
+var g_is_myturn = false;
+var g_data = null;
 
 var reg = /^[a-zA-Z0-9_\u4e00-\u9fa5]+$/;
 var LOGIN_ERROR = "There is no server to log in, please wait.";
@@ -20,7 +24,7 @@ var pai_names = [
 function holds_display(holds)
 {
     var ss = '';
-    holds.sort();
+    holds.sort(function(a,b){return a>b?1:-1;});
     for (var i = 0 ; i < holds.length ; i ++) 
     {
         ss = ss + ',' + pai_names[holds[i]];
@@ -28,17 +32,51 @@ function holds_display(holds)
     return ss;
 }
 
-// show tip
+function find_user(seat)
+{
+    for(var i = 0 ; i < g_users.length ; i ++ ) {
+        if (g_users[i].seat == seat) return g_users[i];
+    }
+    return null;
+}
+
+function update_users(msg)
+{
+    var user = find_user(msg.seat);
+    if (!user) {
+        g_users.push({uid: msg.u, seat: msg.seat});
+    }
+    if (msg.u == g_uid) g_seat = msg.seat;
+}
+
+function chupai()
+{
+    var pai = g_data.holds[0];
+    setTimeout(function(){
+        sendMsg({e:'chupai', pai:pai});
+    }, 3000);
+}
+
 function tip(msg) {
 	//var title = 'Message Notify';
 	//var tip = 'msg: ' + msg.e + ', uid: ' + msg.u;
 	//var pop=new Pop(title, tip);
 
 	var tip = 'room: ' + g_rid + ', 收到：' + JSON.stringify(msg);
-    $('#gameView').append('<div class="msgbox">' + tip + '</div>');
+    if (msg.e != 'holddata') $('#gameView').append('<div class="msgbox">' + tip + '</div>');
 
-    if (msg.e == 'holddata') {
-        $('#gameView').append( '<div class="msgbox">手牌：' + holds_display(msg.d.holds) + '</div>' );
+    if (msg.e == 'ready') {
+        update_users(msg);
+    }
+    else if (msg.e == 'holddata') {
+        $('#gameView').append( '<div class="msgbox">' + holds_display(msg.d.holds) + '</div>' );
+        g_data = msg.d;
+        if (g_data.canHu) {
+            $('#gameView').append('<div class="msgbox">我胡了！！！</div>');
+        }
+    }
+    else if (msg.e == 'mopai') {
+        chupai();
     }
 };
 
