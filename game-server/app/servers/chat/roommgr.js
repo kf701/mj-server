@@ -10,14 +10,14 @@ var RoomObject = {
     roomId: '0',
     type: 'private',  // normal, private, compete
     turnTimeout: 0,   // 出牌限时, 0 = 无限时
-    passTimeout: 10,  
+    passTimeout: 30,  
     currentTurn: 0,   // 当前轮到哪个座位出牌
     creatorUid: 0,
     numOfGames: 0,    // 玩了几局了
     timer: null,
     numOfPlayers: 2,  // 共几个玩家
     players: null,
-    state: 'wait',    // wait, ready, play, over
+    state: 'wait',    // wait, play, over
     runServer: '',
     gameData: null,
     turnTimeFunc: function(room) {
@@ -54,29 +54,8 @@ exports.findRoom = function(roomId)
     return allRooms[roomId];
 };
 
-exports.enter = function(roomId, uid)
+function _findPlayerSeat(room, uid)
 {
-    var room = allRooms[roomId];
-
-    if (room.players.length >= room.numOfPlayers) return false;
-
-    var u = UserMgr.findUser(uid);
-    u.roomId = roomId;
-    room.players.push(u); 
-    u.seat = room.players.length - 1;
-
-    var msg = {
-        e: 'enter',
-        u: uid
-    };
-    RoomMsg.broadcast(roomId, msg);
-    return true;
-};
-
-exports.leave = function(roomId, uid)
-{
-    var room = allRooms[roomId];
-
     var userIndex = -1;
     for (var i = 0 ; i < room.players.length ; i ++) {
         if (room.players[i].uid == uid) {
@@ -84,7 +63,61 @@ exports.leave = function(roomId, uid)
             break;
         }
     }
+    return userIndex;
+}
+
+function _resetSeat(room)
+{
+    for (var i = 0 ; i < room.players.length ; i ++) {
+        room.players[i].seat = i;
+    }
+}
+
+exports.enter = function(roomId, uid)
+{
+    var room = allRooms[roomId];
+
+    var player = UserMgr.findUser(uid);
+    var userIndex = _findPlayerSeat(room, uid);
+
+    // offline to online
+    if (userIndex > -1) {
+        GameAlgo.online(room, player);
+        return true;
+    }
+
+    if (room.players.length >= room.numOfPlayers) return false;
+
+    room.players.push(player); 
+    player.roomId = roomId;
+
+    _resetSeat(room); // 游戏没有正式开始，重新排座次
+
+    var msg = {
+        e: 'enter',
+        u: uid
+    };
+    RoomMsg.broadcast(roomId, msg);
+
+    return true;
+};
+
+exports.leave = function(roomId, uid)
+{
+    var room = allRooms[roomId];
+
+    var userIndex = _findPlayerSeat(room, uid);
     if (userIndex < 0) return false;
+
+    if (room.state == 'play') {
+        var msg = {
+            e: 'offline',
+            u: uid
+        };
+        RoomMsg.broadcast(roomId, msg);
+        return true;
+    }
+
     var u = room.players[userIndex];
     u.roomId = 0;
     room.players.splice(userIndex, 1);
@@ -94,6 +127,9 @@ exports.leave = function(roomId, uid)
         u: uid
     };
     RoomMsg.broadcast(roomId, msg);
+
+    UserMgr.del(uid);
+
     return true;
 };
 
@@ -116,14 +152,22 @@ exports.dealMsg = function(roomId, uid, msg)
     var room = allRooms[roomId];
     var player = UserMgr.findUser(uid);
 
-    if (msg.e == 'ready') {
+    if (msg.e == 'ready')
+    {
         player.ready = true;
 
+        if ( isReady(room) ) {
+            room.state = 'play';
+        }
+
         var msg = {
-            e: 'ready',
-            u: uid,
-            seat: player.seat
+            e: 'state',
+            room: room.state,
+            players: []
         };
+        for (var i = 0 ; i < room.players.length ; i ++) {
+            msg.players.push({uid:room.players[i].uid, seat: room.players[i].seat, ready:room.players[i].ready});
+        }
         RoomMsg.broadcast(roomId, msg);
 
         if ( isReady(room) ) {

@@ -34,6 +34,16 @@ function _syncPlayerData(player)
     RoomMsg.push(player.roomId, [player.uid], msg);
 }
 
+function _genUids(room, exuid)
+{
+    var uids = [];
+    for (var i = 0 ; i < room.players.length ; i ++) {
+        if (room.players[i].uid != exuid) 
+            uids.push(room.players[i].uid);
+    }
+    return uids;
+}
+
 function _removeItems(player, pai, removeCount)
 {
     var count = 0;
@@ -106,6 +116,7 @@ function _preparePlayer(player)
     player.gameData.canGang = false;
     player.gameData.canChi  = false;
     player.gameData.canHu   = false;
+    player.gameData.hup     = false;
 }
 
 function _liuJu(room)
@@ -158,13 +169,14 @@ function prepare(room)
 		_moPai(room, room.players[room.currentTurn]);
         _moveNext(room);
     }
-    var mo = _moPai(room, room.players[room.currentTurn]);
 
     for (var i = 0 ; i < room.players.length ; i ++) {
         _syncPlayerData(room.players[i]);
     }
 
     _broadcastTurn(room.roomId, room.currentTurn);
+
+    var mo = _moPai(room, room.players[room.currentTurn]);
     var msg = {
         e: 'mopai',
         u: room.players[room.currentTurn].uid,
@@ -173,19 +185,68 @@ function prepare(room)
     RoomMsg.push(room.roomId, [room.players[room.currentTurn].uid], msg);
 }
 
+function online(room, player)
+{
+    player.ready = true;
+
+    // 推送所有Player的状态
+    var msg = {
+        e: 'state',
+        room: room.state,
+        players: []
+    };
+    for (var i = 0 ; i < room.players.length ; i ++) {
+        msg.players.push({uid:room.players[i].uid, seat: room.players[i].seat, ready:room.players[i].ready});
+    }
+    RoomMsg.push(room.roomId, [player.uid], msg);
+
+    // 广播Online
+    var msg = {
+        e: 'online',
+        u: player.uid
+    };
+    RoomMsg.broadcast(room.roomId, msg);
+
+    // 推送游戏数据
+    _syncPlayerData(player);
+
+    // 推送其他Player的游戏数据
+    msg = {
+        e: 'holddata',
+        d: {}
+    };
+
+    for (var i = 0 ; i < room.players.length ; i ++)
+    {
+        var other = room.players[i];
+        if (other.uid != player.uid) {
+            msg.u = other.uid;
+            msg.d.pengs = other.gameData.pengs;
+            msg.d.rids  = other.gameData.rids;
+            msg.d.gangs = other.gameData.gangs;
+            msg.d.chis  = other.gameData.chis ;
+            RoomMsg.push(room.roomId, [player.uid], msg);
+        }
+    }
+
+    // 广播Turn
+    _broadcastTurn(room.roomId, room.currentTurn);
+}
+
 function _passAll(room)
 {
     for(var i = 0 ; i < room.players.length ; i ++)
     {
         var roomPlayer = room.players[i];
-        var gd = roomPlayer.gameData;
 
-        gd.canPeng = false;
-        gd.canGang = false;
-        gd.canChi  = false;
-        gd.canHu   = false;
-
-        _syncPlayerData(roomPlayer);
+        if (roomPlayer.gameData.hup) {
+            roomPlayer.gameData.canPeng = false;
+            roomPlayer.gameData.canGang = false;
+            roomPlayer.gameData.canChi  = false;
+            roomPlayer.gameData.canHu   = false;
+            roomPlayer.gameData.hup     = false;
+            _syncPlayerData(roomPlayer);
+        }
     }
 
     _moveNext(room);
@@ -208,36 +269,19 @@ function pass(room, player)
     player.gameData.canGang = false;
     player.gameData.canChi  = false;
     player.gameData.canHu   = false;
+    player.gameData.hup     = false;
 
-    var nohup = true;
+    var hup = false;
 
     for(var i = 0 ; i < room.players.length ; i ++)
     {
-        var roomPlayer = room.players[i];
-        var gd = roomPlayer.gameData;
-        var bm = _holdsToBm(gd.holds);
-
-        gd.canPeng = false;
-        gd.canGang = false;
-        gd.canChi  = false;
-        gd.canHu   = false;
-
-        if (roomPlayer.uid != player.uid)
-        {
-            gd.canPeng = checkPeng(bm, pai);
-            gd.canGang = checkGang(bm, pai);
-            gd.canChi  = checkChi(bm, pai);
-            gd.canHu   = checkHu(bm, pai);
+        if (room.players[i].gameData.hup) {
+            hup = true;
+            break;
         }
-        
-        if (gd.canPeng || gd.canGang || gd.canChi || gd.canHu) {
-            nohup = false;
-        }
-
-        _syncPlayerData(roomPlayer);
     }
 
-    if (nohup) {
+    if (!hup) {
         _moveNext(room);
         _broadcastTurn(room.roomId, room.currentTurn);
  
@@ -253,6 +297,22 @@ function pass(room, player)
     }
 
     return true;
+}
+
+function _checkHup(player, pai)
+{
+    var gd = player.gameData;
+    var bm = _holdsToBm(gd.holds);
+
+    gd.canPeng = checkPeng(bm, pai);
+    gd.canGang = checkGang(bm, pai);
+    gd.canChi  = checkChi(bm, pai);
+    gd.canHu   = checkHu(bm, pai);
+    
+    if (gd.canPeng || gd.canGang || gd.canChi || gd.canHu) {
+        gd.hup = true;
+    }
+    return gd.hup;
 }
 
 function chuPai(room, player, pai)
@@ -272,35 +332,22 @@ function chuPai(room, player, pai)
     };
     RoomMsg.broadcast(room.roomId, msg);
 
-    var nohup = true;
+    _syncPlayerData(player);
+
+    var hup = false;
 
     for(var i = 0 ; i < room.players.length ; i ++)
     {
-        var roomPlayer = room.players[i];
-        var gd = roomPlayer.gameData;
-        var bm = _holdsToBm(gd.holds);
-
-        gd.canPeng = false;
-        gd.canGang = false;
-        gd.canChi  = false;
-        gd.canHu   = false;
-
-        if (roomPlayer.uid != player.uid)
-        {
-            gd.canPeng = checkPeng(bm, pai);
-            gd.canGang = checkGang(bm, pai);
-            gd.canChi  = checkChi(bm, pai);
-            gd.canHu   = checkHu(bm, pai);
+        if (room.players[i].uid != player.uid) {
+            if (_checkHup(room.players[i], pai)) 
+            {
+                hup = true;
+                _syncPlayerData(room.players[i]);
+            }
         }
-        
-        if (gd.canPeng || gd.canGang || gd.canChi || gd.canHu) {
-            nohup = false;
-        }
-
-        _syncPlayerData(roomPlayer);
     }
 
-    if (nohup) {
+    if (!hup) {
         _moveNext(room);
         _broadcastTurn(room.roomId, room.currentTurn);
 
@@ -349,14 +396,21 @@ function pengPai(room, player)
     if (!player.canPeng) {
         return false;
     }
-    _removeItems(player, pai, 2);
 
+    _removeItems(player, pai, 2);
     player.gameData.pengs.push(pai, pai, pai);
+
+    var msg = {
+        e: 'pengpai',
+        u: player.uid,
+        pai: pai
+    };
+    RoomMsg.broadcast(room.roomId, msg);
+
+    _syncPlayerData(player);
 
     room.currentTurn = player.seat;
     _broadcastTurn(room.roomId, room.currentTurn);
-
-    _syncPlayerData(player);
 
     return true;
 };
@@ -441,6 +495,7 @@ function getTings(player)
 exports.dice = dice;
 exports.shuffle = shuffle;
 exports.prepare = prepare;
+exports.online = online;
 exports.getTings = getTings;
 exports.chuPai = chuPai;
 exports.pengPai = pengPai;

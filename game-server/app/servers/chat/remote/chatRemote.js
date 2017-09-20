@@ -51,5 +51,5 @@ ChatRemote.prototype.kick = function(uid, sid, rid) {
 		channel.leave(uid, sid);
 	}
     RoomMgr.leave(rid, uid);
-    UserMgr.del(uid);
+    //UserMgr.del(uid);
 };

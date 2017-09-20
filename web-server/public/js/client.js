@@ -3,8 +3,7 @@ var pomelo = window.pomelo;
 
 var g_rid;
 var g_uid;
-var g_seat;
-var g_users = [];
+var g_users = null;
 var g_is_myturn = false;
 var g_data = null;
 
@@ -24,29 +23,16 @@ var pai_names = [
 function holds_display(holds)
 {
     var ss = '';
-    holds.sort(function(a,b){return a>b?1:-1;});
     for (var i = 0 ; i < holds.length ; i ++) 
     {
-        ss = ss + ',' + pai_names[holds[i]];
+        ss = ss + ' ' + pai_names[holds[i]];
     }
     return ss;
 }
 
-function find_user(seat)
-{
-    for(var i = 0 ; i < g_users.length ; i ++ ) {
-        if (g_users[i].seat == seat) return g_users[i];
-    }
-    return null;
-}
-
 function update_users(msg)
 {
-    var user = find_user(msg.seat);
-    if (!user) {
-        g_users.push({uid: msg.u, seat: msg.seat});
-    }
-    if (msg.u == g_uid) g_seat = msg.seat;
+    g_users = msg.players;
 }
 
 function _holdsToBm(arr)
@@ -96,38 +82,75 @@ function find_chupai_ai(holds)
 
 function chupai()
 {
-    var pai = find_chupai_ai(g_data.holds);
     setTimeout(function(){
+        var pai = find_chupai_ai(g_data.holds);
         $('#gameView').append( '<div class="msgbox">我出：' + pai_names[pai] + '</div>' );
         sendMsg({e:'chupai', pai:pai});
-    }, 8000);
+    }, 2000);
 }
 
-function tip(msg) {
-	//var title = 'Message Notify';
-	//var tip = 'msg: ' + msg.e + ', uid: ' + msg.u;
-	//var pop=new Pop(title, tip);
+function tip(msg)
+{
+    console.log('收到：' + JSON.stringify(msg));
 
-	var tip = 'room: ' + g_rid + ', 收到：' + JSON.stringify(msg);
-    if (msg.e != 'holddata') $('#gameView').append('<div class="msgbox">' + tip + '</div>');
-
-    if (msg.e == 'ready') {
+    if (msg.e == 'state') {
         update_users(msg);
-    }
-    else if (msg.e == 'holddata') {
-        $('#gameView').append( '<div class="msgbox">' + holds_display(msg.d.holds) + '</div>' );
-        g_data = msg.d;
-        if (g_data.canHu) {
-            $('#gameView').append('<div class="msgbox">我胡了！！！</div>');
-        }
-        if (g_data.canPeng) {
-            $('#gameView').append( '<div class="msgbox">我碰</div>' );
-            sendMsg({e:'pengpai'});
+        if (msg.room == 'play') {
+            var us = '';
+            $.each(msg.players, function(i, item){
+                us = us + item.uid + ' &nbsp; ';
+            });
+            $('#gameView').append('<div class="msgbox">本局已经开始，成员：' + us + '</div>');
         }
     }
-    else if (msg.e == 'mopai') {
+    else if (msg.e == 'offline') {
+        $('#gameView').append('<div class="msgbox">'+msg.u+'离线了</div>');
+    }
+    else if (msg.e == 'online') {
+        $('#gameView').append('<div class="msgbox">'+msg.u+'上线了</div>');
+    }
+    else if (msg.e == 'holddata')
+    {
+        if (msg.u == g_uid) {
+            if (msg.d.rids.length > 0) {
+                $('#gameView').append( '<div class="msgbox">出的牌：' + holds_display(msg.d.rids) + '</div>' );
+            }
+            if (msg.d.pengs.length > 0) {
+                $('#gameView').append( '<div class="msgbox">碰的牌：' + holds_display(msg.d.pengs) + '</div>' );
+            }
+            msg.d.holds.sort(function(a,b){return a>b?1:-1;});
+            $('#gameView').append( '<div class="msgbox">手里的牌：' + holds_display(msg.d.holds) + '</div>' );
+            $('#gameView').append( '<br/>' );
+            g_data = msg.d;
+            if (g_data.canHu) {
+                $('#gameView').append('<div class="msgbox">我胡了！！！</div>');
+            }
+            if (g_data.canPeng) {
+                $('#gameView').append( '<div class="msgbox">我碰</div>' );
+                sendMsg({e:'pengpai'});
+            }
+        }
+    }
+    else if (msg.e == 'mopai')
+    {
         $('#gameView').append( '<div class="msgbox">我摸到：' + pai_names[msg.pai] + '</div>' );
+        g_data.holds.push(msg.pai);
         chupai();
+    }
+    else if (msg.e == 'pengpai')
+    {
+        if (msg.u != g_uid) {
+            $('#gameView').append( '<div class="msgbox">' + msg.u + ' 碰：' + pai_names[msg.pai] + '</div>' );
+        }
+        else {
+            chupai();
+        }
+    }
+    else if (msg.e == 'chupai') 
+    {
+        if (msg.u != g_uid) {
+            $('#gameView').append( '<div class="msgbox">' + msg.u + ' 出：' + pai_names[msg.pai] + '</div>' );
+        }
     }
 
     $('#gameView').scrollTop($('#gameView')[0].scrollHeight);
@@ -179,7 +202,7 @@ function queryEntry(uid, callback) {
 
 function sendMsg(msg) {
     var xx = '发送: ' + JSON.stringify(msg);
-    $('#gameView').append('<div class="msgbox">' +xx + '</div>');
+    console.log(xx);
 	pomelo.request("chat.chatHandler.send", msg, function(data) {
 	});
 }
