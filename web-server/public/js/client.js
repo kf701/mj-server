@@ -123,7 +123,7 @@ function tip(msg)
             $('#gameView').append( '<br/>' );
             g_data = msg.d;
             if (g_data.canHu) {
-                $('#gameView').append('<div class="msgbox">我胡了！！！</div>');
+                $('#gameView').append('<div class="msgbox">放炮，我胡了！！！</div>');
             }
             if (g_data.canPeng) {
                 $('#gameView').append( '<div class="msgbox">我碰</div>' );
@@ -134,6 +134,12 @@ function tip(msg)
     else if (msg.e == 'mopai')
     {
         $('#gameView').append( '<div class="msgbox">我摸到：' + pai_names[msg.pai] + '</div>' );
+        if (msg.d) {
+            g_data = msg.d;
+            if (g_data.canHu) {
+                $('#gameView').append('<div class="msgbox">自摸，我胡了！！！</div>');
+            }
+        }
         g_data.holds.push(msg.pai);
         chupai();
     }

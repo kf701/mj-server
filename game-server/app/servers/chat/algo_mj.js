@@ -150,6 +150,20 @@ function _moPai(room, player)
     return pai;
 }
 
+function moPaiAndSengMsg(room, player)
+{
+    var mo = _moPai(room, player);
+    var msg = {
+        e: 'mopai',
+        u: player.uid,
+        pai: mo
+    };
+    if (_checkHup(player, mo)) {
+        msg.d = player.gameData;
+    }
+    RoomMsg.push(room.roomId, [player.uid], msg);
+}
+
 function prepare(room)
 {
     room.gameData = {};
@@ -175,14 +189,7 @@ function prepare(room)
     }
 
     _broadcastTurn(room.roomId, room.currentTurn);
-
-    var mo = _moPai(room, room.players[room.currentTurn]);
-    var msg = {
-        e: 'mopai',
-        u: room.players[room.currentTurn].uid,
-        pai: mo
-    };
-    RoomMsg.push(room.roomId, [room.players[room.currentTurn].uid], msg);
+    moPaiAndSengMsg(room, room.players[room.currentTurn]);
 }
 
 function online(room, player)
@@ -235,6 +242,8 @@ function online(room, player)
 
 function _passAll(room)
 {
+    room.passTimerHandler = null;
+
     for(var i = 0 ; i < room.players.length ; i ++)
     {
         var roomPlayer = room.players[i];
@@ -251,16 +260,7 @@ function _passAll(room)
 
     _moveNext(room);
     _broadcastTurn(room.roomId, room.currentTurn);
- 
-    var mo = _moPai(room, room.players[room.currentTurn]);
-    if (mo > -1 ) {
-        var msg = {
-            e: 'mopai',
-            u: room.players[room.currentTurn].uid,
-            pai: mo
-        };
-        RoomMsg.push(room.roomId, [room.players[room.currentTurn].uid], msg);
-    }
+    moPaiAndSengMsg(room, room.players[room.currentTurn]);
 }
 
 function pass(room, player)
@@ -282,18 +282,13 @@ function pass(room, player)
     }
 
     if (!hup) {
+        if ( room.passTimerHandler ) {
+            clearTimeout(room.passTimerHandler);
+            room.passTimerHandler = null;
+        }
         _moveNext(room);
         _broadcastTurn(room.roomId, room.currentTurn);
- 
-        var mo = _moPai(room, room.players[room.currentTurn]);
-        if (mo > -1 ) {
-            var msg = {
-                e: 'mopai',
-                u: room.players[room.currentTurn].uid,
-                pai: mo
-            };
-            RoomMsg.push(room.roomId, [room.players[room.currentTurn].uid], msg);
-        }
+        moPaiAndSengMsg(room, room.players[room.currentTurn]);
     }
 
     return true;
@@ -304,9 +299,13 @@ function _checkHup(player, pai)
     var gd = player.gameData;
     var bm = _holdsToBm(gd.holds);
 
+    if (gd.holds.length > HOLDS_NUM) {
+        bm[pai] --;
+    }
+
     gd.canPeng = checkPeng(bm, pai);
     gd.canGang = checkGang(bm, pai);
-    gd.canChi  = checkChi(bm, pai);
+    //gd.canChi  = checkChi(bm, pai);
     gd.canHu   = checkHu(bm, pai);
     
     if (gd.canPeng || gd.canGang || gd.canChi || gd.canHu) {
@@ -350,19 +349,16 @@ function chuPai(room, player, pai)
     if (!hup) {
         _moveNext(room);
         _broadcastTurn(room.roomId, room.currentTurn);
-
-        var mo = _moPai(room, room.players[room.currentTurn]);
-        if (mo > -1 ) {
-            msg = {
-                e: 'mopai',
-                u: room.players[room.currentTurn].uid,
-                pai: mo
-            };
-            RoomMsg.push(room.roomId, [room.players[room.currentTurn].uid], msg);
-        }
+        moPaiAndSengMsg(room, room.players[room.currentTurn]);
     }
     else {
-        setTimeout(function(){_passAll(room);}, room.passTimeout);
+        if (room.passTimeout > 0) {
+            if ( room.passTimerHandler ) {
+                clearTimeout(room.passTimerHandler);
+                room.passTimerHandler = null;
+            }
+            room.passTimerHandler = setTimeout(function(){_passAll(room);}, room.passTimeout);
+        }
     }
 
     return true;

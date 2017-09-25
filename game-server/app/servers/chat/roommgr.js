@@ -11,6 +11,8 @@ var RoomObject = {
     type: 'private',  // normal, private, compete
     turnTimeout: 0,   // 出牌限时, 0 = 无限时
     passTimeout: 30,  
+    turnTimerHandler: null,
+    passTimerHandler: null,
     currentTurn: 0,   // 当前轮到哪个座位出牌
     creatorUid: 0,
     numOfGames: 0,    // 玩了几局了
@@ -155,6 +157,9 @@ exports.dealMsg = function(roomId, uid, msg)
     if (msg.e == 'ready')
     {
         player.ready = true;
+
+        if (room.state == 'play') 
+            return true;
 
         if ( isReady(room) ) {
             room.state = 'play';
