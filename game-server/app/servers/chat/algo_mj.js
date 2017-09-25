@@ -479,7 +479,7 @@ function getTings(player)
 
     for (var i = 0 ; i < PAI_NUM ; i ++) {
         bm[i] += 1;
-        if (Hulib.checkHu(bm, pai, -1, -1))
+        if (Hulib.checkHu(bm, -1, -1, -1))
             tings.push(i); 
         bm[i] -= 1;
     }
